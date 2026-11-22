@@ -4,6 +4,7 @@ import { exportStatesJson, importStatesJson } from './saveJson.js';
 import { importFiles } from './importFiles.js';
 import { ACCEPT, SYSTEMS } from './systems.js';
 import { envProblems } from './env.js';
+import ControlsPanel from './ControlsPanel.jsx';
 
 function Cover({ blob, label }) {
   const [url, setUrl] = useState(null);
@@ -25,6 +26,7 @@ export default function App() {
   const [playing, setPlaying] = useState(null);
   const [drag, setDrag] = useState(false);
   const [msg, setMsg] = useState('');
+  const [showControls, setShowControls] = useState(false);
   const picker = useRef(null);
   const problems = envProblems();
 
@@ -71,6 +73,7 @@ export default function App() {
             </button>
           ))}
         </div>
+        <button onClick={() => setShowControls(true)}>⌨ Controls</button>
         <button className="primary" onClick={() => picker.current.click()}>Import games</button>
         <input ref={picker} type="file" multiple accept={ACCEPT} hidden
           onChange={(e) => { doImport(e.target.files); e.target.value = ''; }} />
@@ -128,6 +131,8 @@ export default function App() {
           ))}
         </div>
       )}
+
+      {showControls && <ControlsPanel onClose={() => setShowControls(false)} />}
 
       {playing && (
         <div className="overlay">

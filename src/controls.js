@@ -40,3 +40,36 @@ export const DEFAULT_CONTROLS = {
   2: {},
   3: {},
 };
+
+// ---- user-editable bindings (edited from the Controls panel in the library) ----
+export const ACTIONS = [
+  { group: 'D-pad', items: [[4, 'Up'], [5, 'Down'], [6, 'Left'], [7, 'Right']] },
+  { group: 'Buttons', items: [[8, 'A / Circle'], [0, 'B / Cross'], [9, 'X / Triangle'], [1, 'Y / Square']] },
+  { group: 'Shoulders', items: [[10, 'L'], [11, 'R'], [12, 'L2'], [13, 'R2']] },
+  { group: 'System', items: [[2, 'Select'], [3, 'Start']] },
+  { group: 'Analog stick (PSP)', items: [[19, 'Stick up'], [18, 'Stick down'], [17, 'Stick left'], [16, 'Stick right']] },
+];
+
+const LS_KEY = 'ha-controls';
+
+export function loadUserControls() {
+  try {
+    const v = JSON.parse(localStorage.getItem(LS_KEY));
+    if (v && typeof v.keys === 'object') return { keys: v.keys, stamp: v.stamp || 0 };
+  } catch { /* ignore */ }
+  return { keys: {}, stamp: 0 };
+}
+
+export function saveUserControls(keys) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify({ keys, stamp: Date.now() })); } catch { /* ignore */ }
+}
+
+/** Current key name for an action: the user's override, else the default. */
+export const keyFor = (idx, keys = loadUserControls().keys) => keys[idx] ?? DEFAULT_CONTROLS[0][idx].value;
+
+/** Full EmulatorJS controller map with the user's overrides applied. */
+export function buildControls(keys = loadUserControls().keys) {
+  const out = JSON.parse(JSON.stringify(DEFAULT_CONTROLS));
+  for (const [idx, key] of Object.entries(keys)) if (out[0][idx]) out[0][idx].value = key;
+  return out;
+}

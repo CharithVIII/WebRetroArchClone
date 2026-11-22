@@ -1,7 +1,7 @@
 import { getGameFiles, getState, putState } from './db.js';
 import { SYSTEMS, extOf } from './systems.js';
 import { envProblems } from './env.js';
-import { DEFAULT_CONTROLS } from './controls.js';
+import { buildControls, loadUserControls } from './controls.js';
 
 const $ = (id) => document.getElementById(id);
 const BASE = '/emulatorjs/data/';
@@ -20,6 +20,25 @@ function fail(title, items) {
     ul.append(li);
   }
   err.append(h, ul);
+}
+
+// EmulatorJS remembers each game's controls, which would hide later changes made in the library's
+// Controls panel. When that panel was edited after this game last applied it, push the new keys in.
+function applyUserControls(gameId) {
+  const { keys, stamp } = loadUserControls();
+  const flag = `ha-controls-applied:${gameId}`;
+  try {
+    if (!stamp || stamp <= Number(localStorage.getItem(flag) || 0)) return;
+    const E = window.EJS_emulator;
+    const built = buildControls(keys);
+    for (const [idx, c] of Object.entries(built[0])) if (E.controls[0][idx]) E.controls[0][idx].value = c.value;
+    E.setupKeys();
+    E.checkGamepadInputs();
+    E.saveSettings();
+    localStorage.setItem(flag, String(Date.now()));
+  } catch (e) {
+    console.warn('Could not apply custom controls', e);
+  }
 }
 
 async function main() {
@@ -69,10 +88,13 @@ async function main() {
     EJS_gameName: name,
     EJS_pathtodata: BASE,
     EJS_threads: sys.threads,
-    EJS_defaultControls: DEFAULT_CONTROLS,
+    EJS_defaultControls: buildControls(),
     EJS_startOnLoaded: true,
     EJS_color: '#6c8cff',
-    EJS_onGameStart: () => $('status').classList.add('hide'),
+    EJS_onGameStart: () => {
+      $('status').classList.add('hide');
+      applyUserControls(id);
+    },
     // Save states go to the app's own database (per game + slot) instead of EmulatorJS's storage.
     // Registering these handlers replaces EmulatorJS's default save/load behaviour.
     EJS_onSaveState: async ({ state }) => {
