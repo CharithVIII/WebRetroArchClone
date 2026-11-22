@@ -1,0 +1,8 @@
+html, body { margin:0; height:100%; background:#000; color:#e8eaf2; font:15px system-ui, sans-serif; overflow:hidden; }
+#game { width:100%; height:100%; }
+#status { position:fixed; inset:0; display:grid; place-items:center; pointer-events:none; }
+#status.hide { display:none; }
+#error { position:fixed; inset:0; display:grid; place-content:center; padding:30px; background:#14070a; line-height:1.6; }
+#error[hidden] { display:none; }
+#error h2 { color:#ff8c8c; margin-top:0; }
+#error ul { max-width:640px; }
