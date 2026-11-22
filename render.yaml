@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: handheld-arcade
+    runtime: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+    headers:
+      # Needed so crossOriginIsolated is true (threaded PSP core / PS1).
+      - path: /*
+        name: Cross-Origin-Opener-Policy
+        value: same-origin
+      - path: /*
+        name: Cross-Origin-Embedder-Policy
+        value: credentialless
